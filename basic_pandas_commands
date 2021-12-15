@@ -1,0 +1,73 @@
+import pandas as pd
+
+#Task1 : Read csv file and create pandas DataFrame
+
+df=pd.read_csv(r"C:\Users\xxx\Desktop\persona.csv")
+
+#Task2 : Find unique "SOURCE" values and frequency
+df["SOURCE"].value_counts()
+
+#Task3 : Find the number of unique "PRICE" values
+df["PRICE"].nunique()
+
+#Task4 : Find the number of sales by price
+df["PRICE"].value_counts()
+
+#Task5 : Find the number of sales by country
+df["COUNTRY"].value_counts()
+
+#Task6 : Find the revenue from sales by country
+df.groupby("COUNTRY").agg({"PRICE":"sum"})
+
+#Task7 : Find the number of sales by source
+df.groupby("SOURCE").agg({"PRICE":"count"})
+
+#Task8 : Find the mean of price by country
+df.groupby("COUNTRY").agg({"PRICE":"mean"})
+
+#Task9 : Find the mean of price by source
+df.groupby("SOURCE").agg({"PRICE":"mean"})
+
+#Task10 : Find the mean of price by country-source level
+df.groupby(["COUNTRY","SOURCE"]).agg({"PRICE":"mean"})
+
+#Task11 : Find the mean of price by country-source-sex-age level
+df.groupby(["COUNTRY","SOURCE","SEX","AGE"]).agg({"PRICE":"mean"})
+
+#Task12 : Find the mean of price by country-source-sex-age level and sort price column high to low. After create new df for this table.
+agg_df=(df.groupby(["COUNTRY","SOURCE","SEX","AGE"]).agg({"PRICE":"mean"})).sort_values(by="PRICE",ascending=False)
+
+#Task13 : There are 5 columns in the table. "COUNTRY", "SOURCE", "SEX", "AGE" and "PRICE". But without price column others are index of table.
+#With reset_index method we change them index to name of variables. So we can call columns easily.
+agg_df.reset_index(inplace=True)
+
+#Task14 : Create new column with name of "AGE_CAT" > Age Category. Grouping age values for create new common segments.
+agg_df["AGE_CAT"]=pd.cut(agg_df["AGE"],[0,18,23,30,40,70],labels=["0_18","19_23","24_30","31_40","41_66"])
+
+#Task15 : Create new column with name of "customers_level_based". Collecting values of rows in df with for loop.
+agg_df["customers_level_based"]=[i[0].upper() + "_" + i[1].upper() + "_" + i[2].upper() + "_" + str(i[5]).upper() for i in agg_df.values]
+
+#Task16.1 : By the price group the customers new segments and add to agg_df with "SEGMENT" column name.
+
+agg_df["SEGMENT"] = pd.qcut(agg_df["PRICE"], 4, labels=["D","C","B","A"])
+
+#Task16.2 : Find the mean of age values which segments are equals to "A"
+agg_df[agg_df["SEGMENT"]=="A"].groupby("AGE").agg("mean")
+
+#Task17 : Group to segmens and fing mean,max and sum of prices
+agg_df.groupby("SEGMENT")["PRICE"].agg(["mean","max","sum"])
+
+#Task18 : See general information of C segments.
+agg_df[agg_df["SEGMENT"]=="C"].describe()
+
+#Task19 : Find the revenue of person who is using Android and 33 years old turkish female 
+
+new_user = "TUR_ANDROID_FEMALE_31_40" #describe of target customer
+agg_df[agg_df["customers_level_based"] == new_user]    #find the customer customer_level_based
+agg_df[agg_df["customers_level_based"] == new_user].agg({"PRICE":"mean"})  # get the mean of prices for new user.
+
+#Task20 : Find the revenue of person who is using ios and 37 years old french female 
+
+new_user_2 = "FRA_IOS_FEMALE_31_40"
+agg_df[agg_df["customers_level_based"] == new_user]    
+agg_df[agg_df["customers_level_based"] == new_user].agg({"PRICE":"mean"})   
